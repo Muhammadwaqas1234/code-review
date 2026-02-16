@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enterprise AI Code Review</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="dashboard">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2 class="logo">AI Review</h2>
+            <p class="subtitle">Enterprise Code Intelligence</p>
+        </div>
+
+        <form id="reviewForm">
+            <div class="form-group">
+                <label>GitHub Repository URL</label>
+                <input 
+                    type="text" 
+                    id="repo_url"
+                    placeholder="https://github.com/user/repository"
+                    required>
+            </div>
+
+            <div class="form-group">
+                <label>Upload Roles PDF</label>
+                <input 
+                    type="file" 
+                    id="roles_file" 
+                    accept=".pdf" 
+                    required>
+            </div>
+
+            <button type="submit">Start AI Review</button>
+        </form>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="top-header">
+            <h1>Enterprise AI Code Review Dashboard</h1>
+        </header>
+
+        <!-- Hidden by default -->
+        <div id="loading" class="hidden">
+            <div class="spinner"></div>
+            <span>Running AI Review... Please wait</span>
+        </div>
+
+        <div id="result"></div>
+    </main>
+
+</div>
+
+<script src="/static/script.js"></script>
+</body>
+</html>

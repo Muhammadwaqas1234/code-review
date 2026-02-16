@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+python-dotenv
+agno
+openai
+pypdf
+gitpython
+tiktoken
+faiss-cpu
+numpy
+jinja2
