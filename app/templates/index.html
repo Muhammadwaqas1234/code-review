@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Code Review Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+    <script defer src="/static/js/app.js"></script>
+</head>
+<body>
+
+<div class="dashboard">
+
+    <!-- ================= Sidebar ================= -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-mark" aria-hidden="true">⟨/⟩</div>
+            <div>
+                <h1 class="brand-name">AI Code Review</h1>
+                <p class="brand-sub">Multi-agent code intelligence</p>
+            </div>
+        </div>
+
+        <form id="review-form" novalidate>
+            <div class="field">
+                <label for="repo-url">Repository URL</label>
+                <input
+                    type="url"
+                    id="repo-url"
+                    name="repo_url"
+                    placeholder="https://github.com/owner/repo"
+                    autocomplete="off"
+                    spellcheck="false"
+                    required>
+                <p class="field-hint">Public GitHub, GitLab, or Bitbucket repository</p>
+            </div>
+
+            <div class="field field-reviewers">
+                <div class="field-head">
+                    <label>Reviewers</label>
+                    <button type="button" class="link-btn" id="toggle-reviewers">All</button>
+                </div>
+                <div id="reviewer-list" class="reviewer-list">
+                    <p class="field-hint">Loading reviewers…</p>
+                </div>
+                <p class="field-hint">Leave all selected to let the planner choose.</p>
+            </div>
+
+            <div class="field">
+                <label for="roles-file">Roles PDF <span class="label-optional">(optional)</span></label>
+                <label class="file-drop" id="file-drop" for="roles-file">
+                    <span class="file-drop-icon" aria-hidden="true">&#8613;</span>
+                    <span class="file-drop-text" id="file-drop-text">Choose a PDF file…</span>
+                </label>
+                <input type="file" id="roles-file" name="roles_file" accept=".pdf,application/pdf" hidden>
+                <p class="field-hint">Adds team context to the review — max 10&nbsp;MB. Skip it to review against the rules only.</p>
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn-primary">
+                <span class="btn-label">Start review</span>
+            </button>
+        </form>
+    </aside>
+
+    <!-- ================= Main ================= -->
+    <main class="main">
+      <div class="main-inner">
+
+        <!-- Empty state -->
+        <section id="empty-state" class="state">
+            <div class="empty-card">
+                <div class="empty-icon" aria-hidden="true">⟨/⟩</div>
+                <h2>Run your first review</h2>
+                <p>Enter a public repository URL in the sidebar and start the review.
+                   You'll get scored findings from five senior specialist reviewers
+                   and a leadership-ready report. A roles PDF is optional.</p>
+                <div class="empty-badges">
+                    <span class="pill">Code Quality</span>
+                    <span class="pill">Bugs</span>
+                    <span class="pill">Security</span>
+                    <span class="pill">Architecture</span>
+                    <span class="pill">Performance</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Loading state -->
+        <section id="loading-state" class="state hidden" aria-live="polite">
+            <div class="loading-card">
+                <div class="spinner" aria-hidden="true"></div>
+                <h2>Reviewing repository</h2>
+                <p id="loading-status">Cloning repository…</p>
+                <p class="loading-note">Large repositories can take a few minutes.</p>
+            </div>
+        </section>
+
+        <!-- Error state -->
+        <section id="error-state" class="state hidden" role="alert">
+            <div class="error-card">
+                <h2>Review failed</h2>
+                <p id="error-message"></p>
+                <button type="button" class="btn-secondary" id="error-dismiss">Try again</button>
+            </div>
+        </section>
+
+        <!-- Results -->
+        <section id="results-state" class="state hidden">
+
+            <header class="results-header">
+                <div>
+                    <h1 class="results-title">Review Report</h1>
+                    <p class="results-sub" id="results-repo"></p>
+                </div>
+                <div class="results-actions">
+                    <button type="button" class="btn-secondary btn-small" id="copy-report">Copy Markdown</button>
+                    <button type="button" class="btn-primary btn-small" id="download-report">
+                        &#8615;&nbsp; Download report
+                    </button>
+                </div>
+            </header>
+
+            <div class="results-grid">
+                <!-- Score hero -->
+                <div class="card score-card">
+                    <p class="card-label">Overall score</p>
+                    <div class="score-hero">
+                        <span id="score-value" class="score-number">–</span>
+                        <span class="score-denominator">/ 100</span>
+                        <span id="risk-badge" class="badge"></span>
+                    </div>
+                    <div class="meter" role="img" id="score-meter-wrap">
+                        <div class="meter-fill" id="score-meter"></div>
+                    </div>
+                    <p id="score-reasoning" class="score-reasoning"></p>
+                </div>
+
+                <!-- Category bars -->
+                <div class="card">
+                    <p class="card-label">Category scores</p>
+                    <div id="category-bars" class="category-bars"></div>
+                </div>
+            </div>
+
+            <!-- Findings -->
+            <div class="card">
+                <div class="card-head">
+                    <p class="card-label">Findings by reviewer</p>
+                    <span id="findings-total" class="findings-total"></span>
+                </div>
+                <div id="findings"></div>
+            </div>
+
+            <!-- Report -->
+            <div class="card">
+                <div class="card-head">
+                    <p class="card-label">Review report</p>
+                </div>
+                <article id="report" class="report"></article>
+            </div>
+
+        </section>
+
+      </div>
+    </main>
+</div>
+
+</body>
+</html>

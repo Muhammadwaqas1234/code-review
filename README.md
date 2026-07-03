@@ -1,159 +1,124 @@
 # AI Code Review Dashboard
 
-A professional **FastAPI + HTML/CSS/JS dashboard** for performing **AI-powered enterprise code reviews**.
-It allows uploading **roles PDF** and providing a **https://github.com/Muhammadwaqas1234/code-review**, then generates a **full AI review report** and scoring using LLMs and RAG (Retrieval-Augmented Generation).
+A professional **FastAPI + vanilla JS** web app that runs a **multi-agent AI code
+review** on any public GitHub / GitLab / Bitbucket repository. It clones the repo,
+indexes it for retrieval (RAG), runs five senior-level specialist reviewers in
+parallel, and produces a scored, structured report you can read in the browser or
+**download as a professional PDF**.
 
 ---
 
 ## Features
 
-* Upload a **Roles PDF** file for context
-* Provide a **GitHub repository link**
-* Automated **AI analysis**:
-
-  * Style, bugs, architecture, security, and performance reviews
-  * Scoring and risk assessment
-  * Enterprise-grade report generation
-* **Parallel execution** of review agents for speed
-* Professional **dashboard UI**:
-
-  * Sidebar for inputs
-  * Main content area for results
-  * Spinner/loading animation
-* Responsive design for desktop and mobile
-* Uses **FAISS vector store** for smart RAG indexing
-
----
-
-## Technologies
-
-* **Backend**: FastAPI, Python, FAISS, OpenAI API, GitPython, PyPDF
-* **Frontend**: HTML, CSS, JavaScript (vanilla)
-* **Dependencies**:
-
-  * `agno` – AI agents orchestrator
-  * `openai` – LLM API
-  * `pypdf` – PDF reading
-  * `gitpython` – Clone repositories
-  * `tiktoken` – Tokenizer
-  * `faiss-cpu` – Vector search
-  * `python-dotenv` – Environment variable handling
+- **Multi-agent review** — five specialist reviewers, each written as a senior
+  engineer with its own methodology, standards, and severity calibration:
+  - **Code Quality & Style** — dead code, naming, duplication, unprofessional patterns
+  - **Bugs & Correctness** — logic errors, unhandled failures, leaks, edge cases
+  - **Security** — injection, XSS, secrets, auth flaws, SSRF, insecure deserialization…
+  - **Architecture & Structure** — coupling, layering, dependency direction, testability
+  - **Performance** — N+1 queries, blocking hot paths, unbounded memory, waste
+- **Real RAG** — the repo is chunked, embedded locally (fastembed), and indexed in
+  FAISS; each reviewer retrieves the code most relevant to its area.
+- **Structured results** — an overall score, per-category scores, a severity summary,
+  and per-file findings (severity · file:line · issue · fix).
+- **Downloadable report** — a clean, print-ready report document (save as PDF).
+- **Optional roles PDF** — upload a team-roles PDF to add context, or skip it and
+  review against the rules only.
+- **Choose your reviewers** — run all five or a subset.
+- **Pluggable LLM provider** — OpenAI, OpenRouter, or the Anthropic (Claude) API,
+  switchable with one env variable.
 
 ---
 
-## Installation
+## Tech stack
 
-1. Clone this repository:
+- **Backend**: FastAPI, Pydantic (typed settings + response models)
+- **Agents**: [`agno`](https://github.com/agno-agi/agno) over OpenAI / OpenRouter / Anthropic
+- **RAG**: `fastembed` (local embeddings) + `faiss-cpu`
+- **Repo & PDF**: `gitpython`, `pypdf`
+- **Frontend**: HTML, CSS, vanilla JavaScript (Markdown via `marked` + `DOMPurify`)
+- **Tests**: `pytest`
 
-```bash
-git clone https://github.com/yourusername/enterprise-ai-review.git
-cd enterprise-ai-review
-```
+---
 
-2. Create a virtual environment and activate it:
-
-```bash
-python -m venv venv
-venv\Scripts\activate      
-```
-
-3. Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-> **requirements.txt** should include:
->
-> ```
-> agno
-> openai
-> pypdf
-> gitpython
-> tiktoken
-> faiss-cpu
-> python-dotenv
-> ```
-
-4. Create a `.env` file with your **OpenAI API key**:
+## Project structure
 
 ```
-OPENAI_API_KEY=your_openai_api_key_here
+app/
+├── main.py                 # FastAPI app factory
+├── core/                   # config (typed settings) + logging
+├── api/routes/             # pages, /api/review, /api/reviewers, /health
+├── schemas/                # Pydantic request/response models
+├── services/               # repo, pdf, chunk, vector, agents, orchestrator
+│   └── review_rules.py     # the reviewer rule catalog (single source of truth)
+├── utils/                  # robust JSON extraction from LLM output
+├── static/                 # css + js
+└── templates/              # dashboard HTML
+tests/                      # pytest suite
 ```
 
 ---
 
-## Usage
+## Setup
 
-1. Run the **FastAPI backend**:
+1. **Clone and create a virtual environment**
 
-```bash
-uvicorn main:app --reload
-```
+   ```bash
+   git clone https://github.com/Muhammadwaqas1234/code-review.git
+   cd code-review
+   python -m venv venv
+   venv\Scripts\activate          # Windows
+   # source venv/bin/activate      # macOS / Linux
+   ```
 
-2. Open your browser at:
+2. **Install dependencies**
 
-```
-http://127.0.0.1:8000
-```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-3. Use the sidebar to:
+3. **Configure the LLM provider** — copy `.env.example` to `.env` and fill in a key
+   for the provider you want:
 
-   * Enter **GitHub repository URL**
-   * Upload **Roles PDF**
-   * Click **Start AI Review**
+   ```
+   LLM_PROVIDER=openai            # openai | openrouter | anthropic
+   OPENAI_API_KEY=your_key_here
+   ```
 
-4. The main content area will display:
-
-   * **Loading spinner** while processing
-   * **Final score**
-   * **Enterprise report**
+   `.env` is gitignored — your keys are never committed.
 
 ---
 
-## Project Structure
+## Run
 
-```
-backend/
-│
-├── main.py
-├── config.py
-├── schemas.py
-├── services/
-│   ├── pdf_service.py
-│   ├── repo_service.py
-│   ├── chunk_service.py
-│   ├── vector_service.py
-│   ├── agent_service.py
-│   └── orchestrator_service.py
-│
-├── static/
-│   ├── style.css
-│   └── script.js
-│
-├── templates/
-│   └── index.html
-│
-├── requirements.txt
-└── .env
-
+```bash
+uvicorn app.main:app --reload
 ```
 
+Open <http://127.0.0.1:8000>, enter a public repository URL, optionally choose
+reviewers or upload a roles PDF, and click **Start review**. When it finishes you
+can read the results in the browser or click **Download report**.
+
+Interactive API docs are available at <http://127.0.0.1:8000/docs>.
+
+---
+
+## Tests
+
+```bash
+pytest
+```
+
+---
 
 ## Notes
 
-* Ensure your OpenAI API key is valid and has sufficient quota.
-* Only public GitHub repositories are supported for now.
-* PDF roles should be in **text-readable format** (not scanned images).
-
----
-
-## Future Improvements
-
-* Add **authentication/login** for enterprise users
-* Add **review history and export**
-* Color-coded **risk levels** in report
-* Real-time **progress updates** using WebSockets
+- Only **public** repositories are supported.
+- The default models are set per provider in `app/core/config.py` and can be
+  overridden with `SMART_MODEL` / `FAST_MODEL` in `.env`.
+- Reviewers, rules, chunking, and limits are all configurable — adding a new
+  reviewer is a single entry in `app/services/review_rules.py`, and it appears in
+  the UI automatically.
 
 ---
 
