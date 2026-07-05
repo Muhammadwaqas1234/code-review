@@ -1,47 +1,66 @@
+<div align="center">
+
 # AI Code Review Dashboard
 
-A professional **FastAPI + vanilla JS** web app that runs a **multi-agent AI code
-review** on any public GitHub / GitLab / Bitbucket repository. It clones the repo,
-indexes it for retrieval (RAG), runs five senior-level specialist reviewers in
-parallel, and produces a scored, structured report you can read in the browser or
-**download as a professional PDF**.
+**Multi-agent AI code review for any public repository — scored, structured, and exportable as a professional PDF.**
+
+<br>
+
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
+![FAISS](https://img.shields.io/badge/FAISS-0467DF?style=flat-square&logo=meta&logoColor=white)
+![Pydantic](https://img.shields.io/badge/Pydantic-E92063?style=flat-square&logo=pydantic&logoColor=white)
+![License: MIT](https://img.shields.io/badge/License-MIT-22c55e?style=flat-square)
+
+<br>
+
+<img src="docs/dashboard.png" alt="AI Code Review Dashboard" width="85%" />
+
+</div>
+
+---
+
+## Overview
+
+A professional **FastAPI + vanilla JS** web app that runs a **multi-agent AI code review** on any public GitHub / GitLab / Bitbucket repository. It clones the repo, indexes it for retrieval (RAG), runs five senior-level specialist reviewers in parallel, and produces a scored, structured report you can read in the browser or **download as a professional PDF**.
 
 ---
 
 ## Features
 
-- **Multi-agent review** — five specialist reviewers, each written as a senior
-  engineer with its own methodology, standards, and severity calibration:
-  - **Code Quality & Style** — dead code, naming, duplication, unprofessional patterns
-  - **Bugs & Correctness** — logic errors, unhandled failures, leaks, edge cases
-  - **Security** — injection, XSS, secrets, auth flaws, SSRF, insecure deserialization…
-  - **Architecture & Structure** — coupling, layering, dependency direction, testability
-  - **Performance** — N+1 queries, blocking hot paths, unbounded memory, waste
-- **Real RAG** — the repo is chunked, embedded locally (fastembed), and indexed in
-  FAISS; each reviewer retrieves the code most relevant to its area.
-- **Structured results** — an overall score, per-category scores, a severity summary,
-  and per-file findings (severity · file:line · issue · fix).
+- **Multi-agent review** — five specialist reviewers, each written as a senior engineer with its own methodology, standards, and severity calibration:
+
+  | Reviewer | Focus |
+  | :--- | :--- |
+  | **Code Quality & Style** | Dead code, naming, duplication, unprofessional patterns |
+  | **Bugs & Correctness** | Logic errors, unhandled failures, leaks, edge cases |
+  | **Security** | Injection, XSS, secrets, auth flaws, SSRF, insecure deserialization |
+  | **Architecture & Structure** | Coupling, layering, dependency direction, testability |
+  | **Performance** | N+1 queries, blocking hot paths, unbounded memory, waste |
+
+- **Real RAG** — the repo is chunked, embedded locally (fastembed), and indexed in FAISS; each reviewer retrieves the code most relevant to its area.
+- **Structured results** — an overall score, per-category scores, a severity summary, and per-file findings (severity · file:line · issue · fix).
 - **Downloadable report** — a clean, print-ready report document (save as PDF).
-- **Optional roles PDF** — upload a team-roles PDF to add context, or skip it and
-  review against the rules only.
+- **Optional roles PDF** — upload a team-roles PDF to add context, or skip it and review against the rules only.
 - **Choose your reviewers** — run all five or a subset.
-- **Pluggable LLM provider** — OpenAI, OpenRouter, or the Anthropic (Claude) API,
-  switchable with one env variable.
+- **Pluggable LLM provider** — OpenAI, OpenRouter, or the Anthropic (Claude) API, switchable with one env variable.
 
 ---
 
-## Tech stack
+## Tech Stack
 
-- **Backend**: FastAPI, Pydantic (typed settings + response models)
-- **Agents**: [`agno`](https://github.com/agno-agi/agno) over OpenAI / OpenRouter / Anthropic
-- **RAG**: `fastembed` (local embeddings) + `faiss-cpu`
-- **Repo & PDF**: `gitpython`, `pypdf`
-- **Frontend**: HTML, CSS, vanilla JavaScript (Markdown via `marked` + `DOMPurify`)
-- **Tests**: `pytest`
+| Layer | Technology |
+| :--- | :--- |
+| Backend | FastAPI, Pydantic (typed settings + response models) |
+| Agents | [`agno`](https://github.com/agno-agi/agno) over OpenAI / OpenRouter / Anthropic |
+| RAG | `fastembed` (local embeddings) + `faiss-cpu` |
+| Repo & PDF | `gitpython`, `pypdf` |
+| Frontend | HTML, CSS, vanilla JavaScript (Markdown via `marked` + `DOMPurify`) |
+| Tests | `pytest` |
 
 ---
 
-## Project structure
+## Project Structure
 
 ```
 app/
@@ -59,7 +78,9 @@ tests/                      # pytest suite
 
 ---
 
-## Setup
+## Getting Started
+
+**Prerequisites:** Python 3.10+ and an API key for OpenAI, OpenRouter, or Anthropic.
 
 1. **Clone and create a virtual environment**
 
@@ -77,8 +98,7 @@ tests/                      # pytest suite
    pip install -r requirements.txt
    ```
 
-3. **Configure the LLM provider** — copy `.env.example` to `.env` and fill in a key
-   for the provider you want:
+3. **Configure the LLM provider** — copy `.env.example` to `.env` and fill in a key for the provider you want:
 
    ```
    LLM_PROVIDER=openai            # openai | openrouter | anthropic
@@ -95,9 +115,7 @@ tests/                      # pytest suite
 uvicorn app.main:app --reload
 ```
 
-Open <http://127.0.0.1:8000>, enter a public repository URL, optionally choose
-reviewers or upload a roles PDF, and click **Start review**. When it finishes you
-can read the results in the browser or click **Download report**.
+Open <http://127.0.0.1:8000>, enter a public repository URL, optionally choose reviewers or upload a roles PDF, and click **Start review**. When it finishes you can read the results in the browser or click **Download report**.
 
 Interactive API docs are available at <http://127.0.0.1:8000/docs>.
 
@@ -111,17 +129,22 @@ pytest
 
 ---
 
-## Notes
+## Configuration Notes
 
 - Only **public** repositories are supported.
-- The default models are set per provider in `app/core/config.py` and can be
-  overridden with `SMART_MODEL` / `FAST_MODEL` in `.env`.
-- Reviewers, rules, chunking, and limits are all configurable — adding a new
-  reviewer is a single entry in `app/services/review_rules.py`, and it appears in
-  the UI automatically.
+- The default models are set per provider in `app/core/config.py` and can be overridden with `SMART_MODEL` / `FAST_MODEL` in `.env`.
+- Reviewers, rules, chunking, and limits are all configurable — adding a new reviewer is a single entry in `app/services/review_rules.py`, and it appears in the UI automatically.
 
 ---
 
 ## License
 
-MIT License © 2026 Waqas Abid
+MIT License © 2026 Waqas Abid — see [LICENSE](LICENSE).
+
+<div align="center">
+
+<br>
+
+*Built by [Muhammad Waqas](https://github.com/Muhammadwaqas1234) — AI Engineer · Agentic AI · RAG*
+
+</div>
